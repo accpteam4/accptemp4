@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bdqn.dao.Smbms_ProviderMapper">
+    <!-- 查询所有及模糊查询 -->
+    <select id="querySP" resultType="Smbms_Provider">
+        SELECT * FROM smbms_provider
+        <where>
+            <if test="proCode!=null and proCode!=''">
+                and proCode LIKE CONCAT('%',#{proCode},'%')
+            </if>
+            <if test="proName!=null and proName!=''">
+                and proName LIKE CONCAT('%',#{proName},'%')
+            </if>
+            <if test="id !=null and id !=''">
+                and id=#{id}
+            </if>
+        </where>
+    </select>
+
+    <!-- 添加供应商 -->
+    <insert id="addProvider">
+          INSERT INTO smbms_provider (proCode,proName,proContact,proPhone,proAddress,proFax,proDesc,creationDate)
+            VALUES(#{proCode},#{proName},#{proContact},#{proPhone},#{proAddress},#{proFax},#{proDesc},NOW());
+    </insert>
+
+    <!-- 修改供应商 -->
+    <update id="updateProvider">
+        UPDATE smbms_provider
+        <set>
+            <if test="proCode != null">proCode=#{proCode},</if>
+            <if test="proName != null">proName=#{proName},</if>
+            <if test="proContact != null">proContact=#{proContact},</if>
+            <if test="proPhone != null">proPhone=#{proPhone},</if>
+            <if test="proAddress != null">proAddress=#{proAddress},</if>
+            <if test="proFax != null">proFax=#{proFax},</if>
+            <if test="proDesc != null">proDesc=#{proDesc},</if>
+            <if test="creationDate!=null">creationDate=date(#{creationDate,jdbcType=TIMESTAMP}),</if>
+        </set>
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <!--  删除供应商 -->
+    <delete id="deleteProvider">
+        DELETE FROM smbms_provider WHERE id = #{id}
+    </delete>
+
+    <!-- 查询是否有订单信息  -->
+    <select id="count" resultType="_int">
+      SELECT COUNT(*) FROM smbms_provider p,smbms_bill b  WHERE b.providerId=p.id AND p.id=#{id}
+    </select>
+
+</mapper>

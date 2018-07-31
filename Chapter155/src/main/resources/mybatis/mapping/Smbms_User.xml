@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bdqn.dao.Smbms_UserMapper">
+
+    <resultMap id="User" type="Smbms_User">
+        <result column="uid" property="id"/>
+        <association property="smbms_role" javaType="Smbms_Role">
+            <result column="rid" property="id"/>
+        </association>
+    </resultMap>
+
+    <select id="querySU" resultMap="User">
+        SELECT u.*,r.*,u.id uid,r.id rid
+        FROM smbms_user u,smbms_role r
+        <where>
+            u.userRole=r.id
+            <if test="userName!=null and userName!=''">
+                AND u.userName LIKE CONCAT('%',#{userName},'%')
+            </if>
+            <if test="userRole!=null and userRole!=''">
+                AND u.userRole=#{userRole}
+            </if>
+            <if test="id!=null and id!=''">
+                AND u.id = #{id}
+            </if>
+        </where>
+    </select>
+
+    <delete id="delete">
+        delete from smbms_user where id = #{uid}
+    </delete>
+
+    <update id="update">
+        UPDATE smbms_user
+        <set>
+            <if test="userCode!=null and userCode!=''">userCode=#{userCode},</if>
+            <if test="userName!=null and userName!=''">userName=#{userName},</if>
+            <if test="userPassword!=null and userPassword!=''">userPassword=#{userPassword},</if>
+            <if test="userRole!=null and userRole!=''">userRole=#{userRole},</if>
+            <if test="gender!=null and gender!=''">gender=#{gender},</if>
+            <if test="birthday!=null">birthday=#{birthday},</if>
+            <if test="phone!=null and phone!=''">phone=#{phone},</if>
+            <if test="address!=null and address!=''">address=#{address},</if>
+            <if test="creationDate!=null">creationDate=#{creationDate},</if>
+        </set>
+        where id = #{id}
+    </update>
+    <select id="count" resultType="_int">
+        SELECT COUNT(1) FROM smbms_user
+         <where>
+             <if test="userCode!=null and userCode!=''">
+                 and userCode = #{userCode}
+             </if>
+         </where>
+    </select>
+    <insert id="Add">
+        INSERT INTO smbms_user (userCode,userName,userPassword,userRole,gender,birthday,phone,address,creationDate)
+         VALUES(#{userCode},#{userName},#{userPassword},#{userRole},#{gender},#{birthday},#{phone},#{address},NOW());
+    </insert>
+</mapper>

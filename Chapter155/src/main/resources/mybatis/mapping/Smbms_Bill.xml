@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bdqn.dao.Smbms_BillMapper">
+
+    <resultMap id="SB" type="Smbms_Bill">
+        <result column="sbid" property="id"/>
+        <association property="smbms_provider" javaType="Smbms_Provider">
+            <result column="spid" property="id"/>
+        </association>
+    </resultMap>
+
+    <select id="querySB" resultMap="SB">
+        SELECT sb.*,sp.*,sb.id sbid,sp.id spid
+        FROM smbms_bill sb,smbms_provider sp
+        <where>
+            sb.providerId=sp.id
+            <if test="productName!=null and productName!=''">
+                AND sb.productName LIKE CONCAT('%',#{productName},'%')
+            </if>
+            <if test="providerId!=null and providerId>0">
+                AND sb.providerId = #{providerId}
+            </if>
+            <if test="isPayment!=null and isPayment>0 " >
+                AND sb.isPayment = #{isPayment}
+            </if>
+            <if test="id!=null and id!=''">
+                AND sb.id = #{id}
+            </if>
+        </where>
+    </select>
+
+    <delete id="delete">
+          DELETE FROM smbms_bill WHERE id = #{id}
+    </delete>
+    <insert id="add">
+         INSERT INTO smbms_bill (billCode,productName,productDesc,productUnit,productCount,totalPrice,isPayment,providerId,createdBy,creationDate)
+              VALUES(#{billCode},#{productName},#{productDesc},#{productUnit},#{productCount},#{totalPrice},#{isPayment},#{providerId},#{createdBy},NOW());
+    </insert>
+    <update id="update">
+        UPDATE smbms_bill
+        <set>
+            <if test="billCode!=null">billCode = #{billCode},</if>
+            <if test="productName!=null">productName = #{productName},</if>
+            <if test="productDesc!=null">productDesc = #{productDesc},</if>
+            <if test="productUnit!=null">productUnit = #{productUnit},</if>
+            <if test="productCount!=null">productCount = #{productCount},</if>
+            <if test="totalPrice!=null">totalPrice = #{totalPrice},</if>
+            <if test="isPayment!=null">isPayment = #{isPayment},</if>
+            <if test="providerId!=null">providerId = #{providerId},</if>
+            <if test="createdBy!=null">createdBy = #{createdBy},</if>
+            <if test="creationDate!=null">creationDate = #{creationDate},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+</mapper>

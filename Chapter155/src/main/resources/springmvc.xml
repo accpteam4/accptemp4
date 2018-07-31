@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.1.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+    http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+    http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-3.1.xsd"
+        default-autowire="byName">
+
+    <!--扫描注解的Bean-->
+    <context:component-scan base-package="com.bdqn"/>
+
+
+    <!-- 多视图解析器 -->
+    <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+        <!-- 指定json 用什么工具解析  xml 用什么工具解析 -->
+        <property name="defaultViews">
+            <list>
+                <bean class="com.alibaba.fastjson.support.spring.FastJsonJsonView">
+                    <property name="charset" value="UTF-8"/>
+                </bean>
+                <bean class="org.springframework.web.servlet.view.xml.MarshallingView">
+                    <constructor-arg>
+                        <bean class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+                            <property name="classesToBeBound">
+                                <list>
+                                    <value>com.bdqn.entity.Smbms_Address</value>
+                                    <value>com.bdqn.entity.Smbms_Bill</value>
+                                    <value>com.bdqn.entity.Smbms_Provider</value>
+                                    <value>com.bdqn.entity.Smbms_Role</value>
+                                    <value>com.bdqn.entity.Smbms_User</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </constructor-arg>
+                </bean>
+            </list>
+        </property>
+        <!-- 指定 jsp解析器 -->
+        <property name="viewResolvers">
+            <list>
+                <bean	class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+                    <property name="prefix" value="/WEB-INF/jsp/" />
+                    <property name="suffix" value=".jsp" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <!--解决springmvc返回的json中文问题  -->
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <constructor-arg value="utf-8" />
+            </bean>
+            <bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!--静态加载 -->
+    <mvc:resources mapping="/statics/**" location="/WEB-INF/statics/"/>
+    <mvc:resources mapping="/images/*" location="/WEB-INF/statics/images/"/>
+
+    <mvc:annotation-driven/>
+
+
+    <!--扫描所有的dao接口-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.bdqn.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sessionFactory" />
+    </bean>
+
+    <!--拦截器配置-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/user/*"/>
+            <mvc:exclude-mapping path="/user/Login"/>
+            <bean class="com.bdqn.interceptor.MyInterceptor" />
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!--自定义类型转换器-->
+    <bean name="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <bean class="com.bdqn.controller.DataConverter" p:dataPatter="yyyy-MM-dd" />
+            </set>
+        </property>
+    </bean>
+    <mvc:annotation-driven conversion-service="conversionService" />
+
+</beans>
